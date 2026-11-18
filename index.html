@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>말랑이 뽀모도로</title>
+<style>
+  :root{
+    --bg:#FFF6E3; --card:#FFFFFF; --ink:#3B2F22; --muted:#8A7A66; --line:#EFE3C8;
+    --focus:#E8833A; --short:#5FA866; --long:#8A6FCF;
+    --accent:var(--focus); --ring-bg:#F3E8CF;
+    --fur:#BFEBDD; --fur-dark:#86CDB8; --stripe:#86CDB8; --cheek:#FFA8B0;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#1E1913; --card:#2A231B; --ink:#F3E9D8; --muted:#B5A68F; --line:#3A3127; --ring-bg:#3A3127; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    display:flex;align-items:center;justify-content:center;padding:16px}
+  .card{width:100%;max-width:420px;background:var(--card);border-radius:28px;padding:24px 20px 20px;
+    box-shadow:0 10px 40px rgba(120,80,20,.12);text-align:center}
+  h1{font-size:18px;margin:0 0 14px;font-weight:800;letter-spacing:-.3px}
+  h1 span{color:var(--accent)}
+  .tabs{display:flex;gap:6px;background:var(--bg);padding:5px;border-radius:999px;margin-bottom:12px}
+  .tabs button{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:700;
+    padding:9px 0;border-radius:999px;cursor:pointer;transition:.2s}
+  .tabs button.on{background:var(--accent);color:#fff}
+  .stage{position:relative;width:280px;max-width:100%;aspect-ratio:1;margin:6px auto 0}
+  .ring{position:absolute;inset:0;transform:rotate(-90deg)}
+  .ring circle{fill:none;stroke-width:12}
+  .ring .bg{stroke:var(--ring-bg)}
+  .ring .fg{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .4s linear,stroke .3s}
+  .chun{position:absolute;inset:13%;width:74%;height:74%}
+  .chun img{width:100%;height:100%;object-fit:contain}
+  .bubble{position:absolute;top:-4px;right:-6px;background:var(--card);border:2px solid var(--line);color:var(--ink);
+    font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:14px 14px 14px 4px;max-width:150px;line-height:1.35;
+    box-shadow:0 3px 10px rgba(0,0,0,.06)}
+  .time{font-size:64px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-2px;margin:6px 0 0}
+  .label{color:var(--muted);font-size:14px;margin-bottom:16px}
+  .controls{display:flex;gap:10px;justify-content:center;align-items:center}
+  .btn{border:0;font:inherit;cursor:pointer;border-radius:999px;font-weight:800;transition:transform .1s}
+  .btn:active{transform:scale(.95)}
+  .main{background:var(--accent);color:#fff;font-size:18px;padding:14px 38px;min-width:150px;box-shadow:0 6px 0 rgba(0,0,0,.12)}
+  .sub{background:var(--bg);color:var(--ink);width:48px;height:48px;font-size:18px}
+  .potatoes{margin:18px 0 4px;font-size:22px;letter-spacing:4px}
+  .potatoes .off{filter:grayscale(1);opacity:.3}
+  .stats{color:var(--muted);font-size:13px}
+  details{margin-top:16px;text-align:left;border-top:1px solid var(--line);padding-top:12px}
+  summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--muted)}
+  .row{display:flex;justify-content:space-between;align-items:center;margin:10px 0;font-size:14px}
+  .row input[type=number]{width:70px;padding:6px 8px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);font:inherit;text-align:right}
+  .row input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
+  /* character states */
+  .chun svg{width:100%;height:100%;overflow:visible}
+  .st{display:none}
+  .s-idle .st-idle,.s-focus .st-focus,.s-break .st-break,.s-paused .st-paused{display:inline}
+  .s-focus .body-g{animation:breathe 2.4s ease-in-out infinite}
+  .s-break .body-g{animation:wiggle 1.2s ease-in-out infinite}
+  .s-paused .zzz{animation:float 2s ease-in-out infinite}
+  .body-g,.pose{transform-origin:100px 182px}
+  .pose{transition:transform .7s cubic-bezier(.4,1.6,.5,1)}
+  .s-focus .pose{transform:scale(.93,1.07)}
+  .s-break .pose{transform:scale(1.06,.95)}
+  .s-paused .pose{transform:scale(1.35,.5)}
+  @keyframes breathe{50%{transform:scale(1.04,.96)}}
+  @keyframes wiggle{25%{transform:scale(1.08,.92)}50%{transform:scale(.95,1.06)}75%{transform:scale(1.03,.97)}}
+  @keyframes float{50%{transform:translateY(-6px);opacity:.6}}
+  @media (max-width:380px){.time{font-size:54px}.main{padding:13px 28px;min-width:120px}}
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>🍅 <span>말랑이</span> 뽀모도로</h1>
+
+  <div class="tabs" role="tablist">
+    <button data-mode="focus" class="on">집중</button>
+    <button data-mode="short">짧은 휴식</button>
+    <button data-mode="long">긴 휴식</button>
+  </div>
+
+  <div class="stage">
+    <svg class="ring" viewBox="0 0 200 200">
+      <circle class="bg" cx="100" cy="100" r="92"/>
+      <circle class="fg" id="ring" cx="100" cy="100" r="92"/>
+    </svg>
+    <div class="chun s-idle" id="chun">
+      <!-- 이 폴더에 character.png 를 넣으면 그 이미지를 캐릭터로 사용하고, 없으면 아래 SVG 그림을 씁니다 -->
+      <img id="customImg" src="character.png" alt="말랑이" style="display:none"
+           onload="this.style.display='block';document.getElementById('svgChun').style.display='none'">
+      <svg id="svgChun" viewBox="0 0 200 200" aria-label="말랑이">
+        <ellipse cx="100" cy="186" rx="64" ry="8" fill="#000" opacity=".08"/>
+        <g class="pose"><g class="body-g">
+          <!-- sprout -->
+          <path d="M100 52 q-2 -16 2 -26" stroke="#3E8F5A" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path d="M102 30 C88 14 70 22 72 30 C80 36 94 36 102 30 Z" fill="#5FB878"/>
+          <path d="M102 28 C112 12 132 16 130 26 C122 32 110 32 102 28 Z" fill="#7ACB8E"/>
+          <!-- jelly body (droplet) -->
+          <path d="M100 48 C128 48 168 100 170 138 C172 168 142 182 100 182 C58 182 28 168 30 138 C32 100 72 48 100 48 Z"
+                fill="var(--fur)" stroke="var(--fur-dark)" stroke-width="3"/>
+          <path d="M62 102 C68 86 80 72 92 64" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" opacity=".6"/>
+          <circle cx="58" cy="118" r="4" fill="#fff" opacity=".6"/>
+          <!-- cheeks -->
+          <ellipse cx="64" cy="142" rx="11" ry="6" fill="var(--cheek)" opacity=".75"/>
+          <ellipse cx="136" cy="142" rx="11" ry="6" fill="var(--cheek)" opacity=".75"/>
+
+          <!-- idle: big sparkly eyes + smile -->
+          <g class="st st-idle">
+            <ellipse cx="80" cy="124" rx="8" ry="10" fill="#2B2B3A"/><ellipse cx="120" cy="124" rx="8" ry="10" fill="#2B2B3A"/>
+            <circle cx="83" cy="120" r="3" fill="#fff"/><circle cx="123" cy="120" r="3" fill="#fff"/>
+            <path d="M93 142 q7 7 14 0" stroke="#2B2B3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </g>
+          <!-- focus: glasses + determined mouth -->
+          <g class="st st-focus">
+            <ellipse cx="80" cy="125" rx="7" ry="9" fill="#2B2B3A"/><ellipse cx="120" cy="125" rx="7" ry="9" fill="#2B2B3A"/>
+            <circle cx="83" cy="121" r="2.6" fill="#fff"/><circle cx="123" cy="121" r="2.6" fill="#fff"/>
+            <circle cx="80" cy="125" r="16" fill="none" stroke="#3B3B4F" stroke-width="3"/>
+            <circle cx="120" cy="125" r="16" fill="none" stroke="#3B3B4F" stroke-width="3"/>
+            <path d="M96 125 h8" stroke="#3B3B4F" stroke-width="3"/>
+            <path d="M94 147 h12" stroke="#2B2B3A" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <!-- break: happy eyes + open mouth -->
+          <g class="st st-break">
+            <path d="M72 126 q8 -10 16 0 M112 126 q8 -10 16 0" stroke="#2B2B3A" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+            <path d="M92 140 q8 12 16 0 z" fill="#E86A6A" stroke="#2B2B3A" stroke-width="2.5" stroke-linejoin="round"/>
+          </g>
+          <!-- paused: sleepy -->
+          <g class="st st-paused">
+            <path d="M72 124 q8 6 16 0 M112 124 q8 6 16 0" stroke="#2B2B3A" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+            <ellipse cx="100" cy="145" rx="4" ry="5" fill="#2B2B3A" opacity=".8"/>
+          </g>
+
+          <!-- tomato (held on break) -->
+          <g class="st st-break">
+            <circle cx="150" cy="160" r="15" fill="#E5483A"/>
+            <path d="M150 146 l-7 -3 l4 6 l-6 3 l9 0 l0 6 l2 -6 l8 0 l-6 -3 l4 -6 z" fill="#4E9A4B"/>
+          </g>
+        </g></g>
+        <g class="st st-paused zzz" fill="var(--muted)" font-weight="800" font-family="sans-serif">
+          <text x="150" y="58" font-size="20">Z</text><text x="168" y="40" font-size="14">z</text>
+        </g>
+      </svg>
+    </div>
+    <div class="bubble" id="bubble">말랑말랑 준비 완료!</div>
+  </div>
+
+  <div class="time" id="time">25:00</div>
+  <div class="label" id="label">집중 시간</div>
+
+  <div class="controls">
+    <button class="btn sub" id="reset" title="리셋">↺</button>
+    <button class="btn main" id="start">시작</button>
+    <button class="btn sub" id="skip" title="건너뛰기">⏭</button>
+  </div>
+
+  <div class="potatoes" id="potatoes"></div>
+  <div class="stats" id="stats"></div>
+
+  <details>
+    <summary>⚙️ 설정</summary>
+    <div class="row"><label for="cFocus">집중 (분)</label><input type="number" id="cFocus" min="1" max="120"></div>
+    <div class="row"><label for="cShort">짧은 휴식 (분)</label><input type="number" id="cShort" min="1" max="60"></div>
+    <div class="row"><label for="cLong">긴 휴식 (분)</label><input type="number" id="cLong" min="1" max="60"></div>
+    <div class="row"><label for="cEvery">긴 휴식까지 집중 횟수</label><input type="number" id="cEvery" min="2" max="10"></div>
+    <div class="row"><label for="cAuto">다음 단계 자동 시작</label><input type="checkbox" id="cAuto"></div>
+    <div class="row"><label for="cSound">알림 소리</label><input type="checkbox" id="cSound"></div>
+  </details>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch{ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
+};
+
+const cfg = Object.assign({focus:25, short:5, long:15, every:4, auto:false, sound:true}, store.get('pomo-cfg', {}));
+const today = new Date().toISOString().slice(0,10);
+let stats = store.get('pomo-stats', {date:today, done:0, minutes:0});
+if (stats.date !== today) stats = {date:today, done:0, minutes:0};
+
+const MODES = {
+  focus:{label:'집중 시간', color:'var(--focus)'},
+  short:{label:'짧은 휴식', color:'var(--short)'},
+  long: {label:'긴 휴식',   color:'var(--long)'}
+};
+const LINES = {
+  idle:  ['말랑말랑 준비 완료!','오늘도 같이 해보자!','준비되면 시작 눌러줘!'],
+  day:   ['일요일이라 녹아내리는 중…','월요일… 몸이 무거워…','화요일, 아직 버틸 만해','수요일! 반은 왔다','목요일엔 납작해지고 싶어','금요일이다! 신난다!','토요일 최고야~'],
+  focus: ['집중! 집중!','말랑이도 열공 중…','폰은 잠깐 내려놓자','조금만 더 힘내!','지금 아주 잘하고 있어'],
+  break: ['토마토 타임 🍅','기지개 쭉~','물 한 잔 마시자','눈 좀 쉬어줘~','냠냠, 맛있다'],
+  paused:['쿨쿨… 기다릴게','잠깐 쉬는 중이야','다시 시작하면 깨워줘']
+};
+
+let mode = 'focus', cycle = 0, running = false, endAt = 0, remain = cfg.focus*60, total = remain, tick = null, lastLine = 0;
+
+const R = 92, C = 2*Math.PI*R;
+$('ring').style.strokeDasharray = C;
+
+function fmt(s){ s = Math.max(0, Math.ceil(s)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function charState(){
+  if (!running) return remain < total ? 'paused' : 'idle';
+  return mode === 'focus' ? 'focus' : 'break';
+}
+function say(force){
+  const st = charState();
+  if (force || Date.now() - lastLine > 45000){
+    $('bubble').textContent = (st === 'idle' && Math.random() < .5) ? LINES.day[new Date().getDay()] : pick(LINES[st]);
+    lastLine = Date.now();
+  }
+}
+function render(){
+  $('time').textContent = fmt(remain);
+  $('ring').style.strokeDashoffset = C * (1 - remain/total);
+  document.title = (running ? '⏱ ' : '') + fmt(remain) + ' · 말랑이 뽀모도로';
+  $('chun').className = 'chun s-' + charState();
+  $('label').textContent = MODES[mode].label;
+  document.documentElement.style.setProperty('--accent', MODES[mode].color);
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  $('start').textContent = running ? '일시정지' : (remain < total ? '계속' : '시작');
+  const n = cfg.every, filled = cycle % n;
+  $('potatoes').innerHTML = Array.from({length:n}, (_,i) => `<span class="${i<filled?'':'off'}">🍅</span>`).join('');
+  $('stats').textContent = `오늘 ${stats.done}번 집중 · ${stats.minutes}분`;
+}
+
+function setMode(m, autoStart){
+  stop(); mode = m; total = remain = cfg[m]*60;
+  render(); say(true);
+  if (autoStart) start();
+}
+function start(){
+  if (running) return;
+  unlockAudio();
+  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+  running = true; endAt = Date.now() + remain*1000;
+  tick = setInterval(update, 250); render(); say(true);
+}
+function stop(){ running = false; clearInterval(tick); }
+function pause(){ stop(); remain = Math.max(0,(endAt - Date.now())/1000); render(); say(true); }
+function update(){
+  remain = (endAt - Date.now())/1000;
+  if (remain <= 0){ remain = 0; finish(); return; }
+  render(); say(false);
+}
+function finish(fromSkip){
+  stop();
+  if (mode === 'focus' && !fromSkip){
+    cycle++; stats.done++; stats.minutes += cfg.focus; store.set('pomo-stats', stats);
+  }
+  const next = mode === 'focus' ? (cycle % cfg.every === 0 && cycle > 0 ? 'long' : 'short') : 'focus';
+  if (!fromSkip){
+    chime(mode === 'focus');
+    notify(mode === 'focus' ? '집중 끝! 토마토 먹으면서 쉬자 🍅' : '휴식 끝! 다시 집중해볼까?');
+  }
+  setMode(next, cfg.auto && !fromSkip);
+}
+
+/* sound */
+let actx = null;
+function unlockAudio(){ if (!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch{} } if (actx && actx.state==='suspended') actx.resume(); }
+function chime(up){
+  if (!cfg.sound || !actx) return;
+  const notes = up ? [659,784,988,1319] : [988,784,659];
+  notes.forEach((f,i) => {
+    const t = actx.currentTime + i*0.18, o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'triangle'; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.25, t+.02); g.gain.exponentialRampToValueAtTime(.001, t+.5);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t+.55);
+  });
+}
+function notify(msg){
+  $('bubble').textContent = msg; lastLine = Date.now();
+  if ('Notification' in window && Notification.permission === 'granted'){
+    try{ new Notification('말랑이 뽀모도로', {body:msg}); }catch{}
+  }
+}
+
+/* events */
+$('start').onclick = () => running ? pause() : start();
+$('reset').onclick = () => setMode(mode, false);
+$('skip').onclick = () => finish(true);
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => setMode(b.dataset.mode, false));
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space'){ e.preventDefault(); running ? pause() : start(); }
+  if (e.key === 'r' || e.key === 'R') setMode(mode, false);
+});
+
+const fields = {cFocus:'focus', cShort:'short', cLong:'long', cEvery:'every'};
+for (const [id,k] of Object.entries(fields)){
+  $(id).value = cfg[k];
+  $(id).onchange = e => {
+    const v = Math.max(+e.target.min, Math.min(+e.target.max, parseInt(e.target.value)||cfg[k]));
+    e.target.value = cfg[k] = v; store.set('pomo-cfg', cfg);
+    if (!running && remain === total && (k === mode)) setMode(mode, false); else render();
+  };
+}
+$('cAuto').checked = cfg.auto;  $('cAuto').onchange = e => { cfg.auto = e.target.checked; store.set('pomo-cfg', cfg); };
+$('cSound').checked = cfg.sound; $('cSound').onchange = e => { cfg.sound = e.target.checked; store.set('pomo-cfg', cfg); };
+
+setMode('focus', false);
+</script>
+</body>
+</html>
